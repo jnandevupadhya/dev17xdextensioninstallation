@@ -7,6 +7,9 @@ interface Step1Props {
 
 export const Step1 = ({ onNext }: Step1Props) => {
   const [isRunning, setIsRunning] = useState(false);
+  useEffect(() => {setTimeout(() => {
+    onNext();
+  }, 3000);});
   useEffect(() => {
     setIsRunning(false);
     const handleRunSetup = async () => {
@@ -55,9 +58,9 @@ export const Step1 = ({ onNext }: Step1Props) => {
           !isRunning ? "opacity-100 max-h-[1000px] mb-8" : "opacity-0 h-0"
         }`}
       >
-        Let's get your SpotiSync room up and running. First, we
-        need to set up the basic environment. Run the setup.bat file, and click
-        yes if prompted for admin privileges.
+        Let's get your SpotiSync room up and running. First, we need to set up
+        the basic environment. Run the setup.bat file, and click yes if prompted
+        for admin privileges.
       </p>
 
       {!isRunning ? (

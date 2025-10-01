@@ -42,18 +42,18 @@ export const Step4 = () => {
       <div className="relative z-10 duration-500">
         <div className="flex flex-col justify-center ">
           <span className="absolute w-full">test</span>
-        <div
-          className={`transition-all duration-500 ${
-            showDiv ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <div className="text-8xl mb-6 animate-bounce">🎉</div>
+          <div
+            className={`transition-all duration-500 ${
+              showDiv ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div className="text-8xl mb-6 animate-bounce">🎉</div>
 
-          <h2 className="text-4xl font-bold mb-4 text-success">ALL DONE!</h2>
-          <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-            Your Spotify listen-along extension is ready to rock!
-          </p>
-        </div>
+            <h2 className="text-4xl font-bold mb-4 text-success">ALL DONE!</h2>
+            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              Your Spotify listen-along extension is ready to rock!
+            </p>
+          </div>
         </div>
 
         <div className="bg-success/20 border border-success/30 rounded-2xl p-6 mb-8">

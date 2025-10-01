@@ -12,6 +12,11 @@ interface Step2Props {
 }
 
 export const Step2 = ({ onNext }: Step2Props) => {
+  useEffect(() => {
+    setTimeout(() => {
+      onNext();
+    }, 3000);
+  });
   const width = 600;
   const height = 1000;
 
@@ -80,7 +85,8 @@ export const Step2 = ({ onNext }: Step2Props) => {
   }, [isCached]);
 
   useEffect(() => {
-    if (submissionError != null && submissionError!="denied") setIsCredsValid(false);
+    if (submissionError != null && submissionError != "denied")
+      setIsCredsValid(false);
   }, [submissionError]);
 
   useEffect(() => {
@@ -566,9 +572,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
             <>
               <h3
                 className={`!fade text-xl font-semibold text-center space-y-4 mb-4 duration-500 origin-top  ${
-                  isProcessing
-                    ? "opacity-0"
-                    : "opacity-100 max-h-[1000px] "
+                  isProcessing ? "opacity-0" : "opacity-100 max-h-[1000px] "
                 }`}
               >
                 Enter Your Credentials
@@ -576,9 +580,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
 
               <div
                 className={`!fade duration-100 origin-top space-y-8 mb-4 p-2 overflow-hidden ${
-                  isProcessing
-                    ? "opacity-0"
-                    : "opacity-100 max-h-[1000px] "
+                  isProcessing ? "opacity-0" : "opacity-100 max-h-[1000px] "
                 }`}
               >
                 <div>
@@ -666,7 +668,9 @@ export const Step2 = ({ onNext }: Step2Props) => {
                 >
                   <p
                     className={`absolute errors transition-opacity duration-500 ${
-                      isCredsValid && submissionError==null ? "opacity-100" : "opacity-0"
+                      isCredsValid && submissionError == null
+                        ? "opacity-100"
+                        : "opacity-0"
                     } text-lg text-lime-400`}
                   >
                     <svg
