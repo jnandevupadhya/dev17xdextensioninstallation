@@ -90,7 +90,7 @@ export const Step4 = () => {
   };
 
   return (
-    <div className="flex gap-6 items-start w-full max-w-7xl mx-auto slide-up-enter">
+    <div className="flex gap-12 items-center w-full max-w-7xl mx-auto slide-up-enter">
       {/* Left Queue - Active Users */}
       <div
         className={`w-1/4 max-w-sm bg-neutral-900/80 rounded-xl p-4 transition-all duration-500 ease-in-out ${
@@ -104,8 +104,8 @@ export const Step4 = () => {
           {users.map((user) => (
             <div
               key={user.id}
-              className={`bg-card/50 border border-border rounded-lg p-3 transition-all duration-500 ease-in-out ${
-                user.disabled ? "opacity-50 max-h-0 mb-0" : "opacity-100 max-h-[100px]"
+              className={`bg-card/50 border border-border rounded-lg p-3 transition-all duration-500 ease-in-out animate-fade-in ${
+                user.disabled ? "opacity-50 grayscale" : "opacity-100"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -219,7 +219,7 @@ export const Step4 = () => {
           {requests.map((request) => (
             <div
               key={request.id}
-              className="bg-card/50 border border-border rounded-lg p-3 transition-all duration-500 ease-in-out opacity-100 max-h-[200px]"
+              className="bg-card/50 border border-border rounded-lg p-3 transition-all duration-500 ease-in-out animate-fade-in"
             >
               <div className="space-y-2">
                 <span className="text-sm text-foreground block">
