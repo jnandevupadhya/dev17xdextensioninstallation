@@ -90,173 +90,171 @@ export const Step4 = () => {
   };
 
   return (
-    <div className="step-card text-center max-w-lg mx-auto slide-up-enter relative overflow-hidden">
-      {/* Confetti Animation */}
-      {confettiPieces.map((piece) => (
-        <div
-          key={piece.id}
-          className="absolute text-2xl confetti pointer-events-none"
-          style={{
-            left: `${piece.left}%`,
-            animationDelay: `${piece.delay}s`,
-            top: "-20px",
-          }}
-        >
-          {piece.emoji}
+    <div className="flex gap-6 items-start w-full max-w-7xl mx-auto slide-up-enter">
+      {/* Left Queue - Active Users */}
+      <div
+        className={`w-1/4 max-w-sm bg-neutral-900/80 rounded-xl p-4 transition-all duration-500 ease-in-out ${
+          showQueues ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"
+        }`}
+      >
+        <h3 className="text-lg font-semibold text-primary mb-3">
+          🎵 Active Users
+        </h3>
+        <div className="space-y-2 mb-4">
+          {users.map((user) => (
+            <div
+              key={user.id}
+              className={`bg-card/50 border border-border rounded-lg p-3 transition-all duration-500 ease-in-out ${
+                user.disabled ? "opacity-50 max-h-0 mb-0" : "opacity-100 max-h-[100px]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">{user.name}</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                    >
+                      <span className="text-lg">⋮</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-background border-border z-50">
+                    <DropdownMenuItem
+                      onClick={() => toggleDisable(user.id)}
+                      className="cursor-pointer"
+                    >
+                      {user.disabled ? "Enable Control" : "Disable Control"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => removeUser(user.id)}
+                      className="cursor-pointer text-destructive"
+                    >
+                      Remove User
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
 
-      <div className="relative z-10">
-        <div
-          className={`flex flex-col justify-center transition-all duration-500 ease-in-out overflow-hidden ${
-            showDiv ? "opacity-100 max-h-[500px] mb-8" : "opacity-0 max-h-0 mb-0"
-          }`}
-        >
-          <div className="text-8xl mb-6 animate-bounce">🎉</div>
+      {/* Center Content - Main Step Card */}
+      <div className="flex-1 text-center relative overflow-hidden">
+        {/* Confetti Animation */}
+        {confettiPieces.map((piece) => (
+          <div
+            key={piece.id}
+            className="absolute text-2xl confetti pointer-events-none"
+            style={{
+              left: `${piece.left}%`,
+              animationDelay: `${piece.delay}s`,
+              top: "-20px",
+            }}
+          >
+            {piece.emoji}
+          </div>
+        ))}
 
-          <h2 className="text-4xl font-bold mb-4 text-success">ALL DONE!</h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            Your Spotify listen-along extension is ready to rock!
+        <div className="relative z-10 step-card max-w-lg mx-auto">
+          <div
+            className={`flex flex-col justify-center transition-all duration-500 ease-in-out overflow-hidden ${
+              showDiv ? "opacity-100 max-h-[500px] mb-8" : "opacity-0 max-h-0 mb-0"
+            }`}
+          >
+            <div className="text-8xl mb-6 animate-bounce">🎉</div>
+
+            <h2 className="text-4xl font-bold mb-4 text-success">ALL DONE!</h2>
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              Your Spotify listen-along extension is ready to rock!
+            </p>
+          </div>
+
+          <div
+            className={`bg-success/20 border border-success/30 rounded-2xl p-6 transition-all duration-500 ease-in-out overflow-hidden ${
+              !showDiv ? "opacity-100 max-h-[500px] mb-8" : "opacity-0 max-h-0 mb-0"
+            }`}
+          >
+            <h3 className="text-xl font-semibold mb-3 flex items-center justify-center">
+              🚀 What's Next?
+            </h3>
+            <ul className="text-muted-foreground space-y-2 text-left">
+              <li className="flex items-start">
+                <span className="text-lg mr-2">👥</span>
+                <span>Share the extension file with your friends</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-lg mr-2">🎵</span>
+                <span>Start a listening party together</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-lg mr-2">💬</span>
+                <span>Enjoy synchronized music experiences</span>
+              </li>
+            </ul>
+          </div>
+
+          <p
+            className={`text-sm text-muted-foreground transition-all duration-500 ease-in-out overflow-hidden ${
+              !showDiv ? "opacity-100 max-h-[500px] mt-6" : "opacity-0 max-h-0 mt-0"
+            }`}
+          >
+            Thanks for using our installer! Have fun listening together! 💚
           </p>
         </div>
+      </div>
 
-        <div
-          className={`bg-success/20 border border-success/30 rounded-2xl p-6 transition-all duration-500 ease-in-out overflow-hidden ${
-            !showDiv ? "opacity-100 max-h-[500px] mb-8" : "opacity-0 max-h-0 mb-0"
-          }`}
-        >
-          <h3 className="text-xl font-semibold mb-3 flex items-center justify-center">
-            🚀 What's Next?
-          </h3>
-          <ul className="text-muted-foreground space-y-2 text-left">
-            <li className="flex items-start">
-              <span className="text-lg mr-2">👥</span>
-              <span>Share the extension file with your friends</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-lg mr-2">🎵</span>
-              <span>Start a listening party together</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-lg mr-2">💬</span>
-              <span>Enjoy synchronized music experiences</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Queue System */}
-        <div
-          className={`grid grid-cols-2 gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
-            showQueues ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"
-          }`}
-        >
-          {/* Left Queue - Active Users */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-primary mb-2">
-              🎵 Active Users
-            </h3>
-            <div className="space-y-2">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className={`bg-card border border-border rounded-lg p-3 transition-all duration-500 ease-in-out ${
-                    user.disabled ? "opacity-50" : "opacity-100"
-                  }`}
-                  style={{
-                    animation: "fadeIn 0.5s ease-in-out",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">{user.name}</span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                        >
-                          <span className="text-lg">⋮</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-background border-border">
-                        <DropdownMenuItem
-                          onClick={() => toggleDisable(user.id)}
-                          className="cursor-pointer"
-                        >
-                          {user.disabled ? "Enable Control" : "Disable Control"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => removeUser(user.id)}
-                          className="cursor-pointer text-destructive"
-                        >
-                          Remove User
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Queue - Join Requests */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-primary mb-2">
-              📥 Join Requests
-            </h3>
-            <div className="space-y-2">
-              {requests.map((request) => (
-                <div
-                  key={request.id}
-                  className="bg-card border border-border rounded-lg p-3 transition-all duration-500 ease-in-out"
-                  style={{
-                    animation: "fadeIn 0.5s ease-in-out",
-                  }}
-                >
-                  <div className="space-y-2">
-                    <span className="text-sm text-foreground block">
-                      {request.name}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        className="flex-1 h-7 text-xs"
-                        onClick={() => acceptRequest(request.id)}
-                      >
-                        ✅ Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="flex-1 h-7 text-xs"
-                        onClick={() => rejectRequest(request.id)}
-                      >
-                        ❌ Reject
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full"
-              onClick={addRequest}
+      {/* Right Queue - Join Requests */}
+      <div
+        className={`w-1/4 max-w-sm bg-neutral-900/80 rounded-xl p-4 transition-all duration-500 ease-in-out ${
+          showQueues ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"
+        }`}
+      >
+        <h3 className="text-lg font-semibold text-primary mb-3">
+          📥 Join Requests
+        </h3>
+        <div className="space-y-2 mb-4">
+          {requests.map((request) => (
+            <div
+              key={request.id}
+              className="bg-card/50 border border-border rounded-lg p-3 transition-all duration-500 ease-in-out opacity-100 max-h-[200px]"
             >
-              + Add Request
-            </Button>
-          </div>
+              <div className="space-y-2">
+                <span className="text-sm text-foreground block">
+                  {request.name}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="flex-1 h-7 text-xs"
+                    onClick={() => acceptRequest(request.id)}
+                  >
+                    ✅ Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="flex-1 h-7 text-xs"
+                    onClick={() => rejectRequest(request.id)}
+                  >
+                    ❌ Reject
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-
-        <p
-          className={`text-sm text-muted-foreground transition-all duration-500 ease-in-out overflow-hidden ${
-            !showDiv ? "opacity-100 max-h-[500px] mt-6" : "opacity-0 max-h-0 mt-0"
-          }`}
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full"
+          onClick={addRequest}
         >
-          Thanks for using our installer! Have fun listening together! 💚
-        </p>
+          + Add Request
+        </Button>
       </div>
     </div>
   );
