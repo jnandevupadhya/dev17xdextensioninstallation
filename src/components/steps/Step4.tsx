@@ -38,6 +38,14 @@ export const Step4 = () => {
   const [acceptedUsers, setAcceptedUsers] = useState<AcceptedUser[]>([]);
   const [nextId, setNextId] = useState(1);
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const terminalContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Auto-scroll terminal to bottom when new lines are added
+    if (terminalContentRef.current) {
+      terminalContentRef.current.scrollTop = terminalContentRef.current.scrollHeight;
+    }
+  }, [terminalLines]);
 
   useEffect(() => {
     // 1️⃣ Fetch room data
@@ -639,7 +647,7 @@ export const Step4 = () => {
             >
               <div className="max-w-lg mx-auto">
                 <div className="bg-background/95 backdrop-blur-sm rounded-lg border-2 border-foreground/20 shadow-[0_0_15px_rgba(255,255,255,0.1)] animate-pulse-border overflow-hidden">
-                  {/* Terminal Header */}
+                  {/* Logs Header */}
                   <div className="bg-muted/50 px-4 py-2 flex items-center gap-2 border-b border-border/50">
                     <div className="flex gap-1.5">
                       <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -647,12 +655,15 @@ export const Step4 = () => {
                       <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                     </div>
                     <span className="text-xs text-muted-foreground font-mono ml-2">
-                      terminal
+                      logs
                     </span>
                   </div>
 
-                  {/* Terminal Content */}
-                  <div className="p-4 h-48 overflow-y-auto font-mono text-sm bg-background/50 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                  {/* Logs Content */}
+                  <div 
+                    ref={terminalContentRef}
+                    className="p-4 h-48 overflow-y-auto font-mono text-sm bg-background/50 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent text-left"
+                  >
                     {terminalLines.length === 0 ? (
                       <div className="text-muted-foreground/50 italic">
                         Waiting for messages...
@@ -661,7 +672,8 @@ export const Step4 = () => {
                       terminalLines.map((line, index) => (
                         <div
                           key={index}
-                          className="text-foreground/90 mb-1 animate-fade-in"
+                          className="transition-all duration-500 ease-in-out opacity-0 max-h-0 animate-[fade-in_0.5s_ease-in-out_forwards] mb-1"
+                          style={{ animationDelay: '0ms' }}
                         >
                           <span className="text-success/70">$</span> {line}
                         </div>
@@ -693,7 +705,7 @@ export const Step4 = () => {
                     className="gap-2"
                   >
                     <Plus className="h-3 w-3" />
-                    Add Terminal Line
+                    Add Log Line
                   </Button>
                 </div>
               </div>
