@@ -16,6 +16,7 @@ interface UserRequest {
   isAdding?: boolean;
   disabled: boolean;
   key?: string;
+  whitelisted?: boolean; // new optional property
 }
 
 interface AcceptedUser {
@@ -25,6 +26,7 @@ interface AcceptedUser {
   isAdding?: boolean;
   disabled: boolean;
   key?: string;
+  whitelisted?: boolean; // new optional property
 }
 
 interface Room {
@@ -37,6 +39,23 @@ export const Step4 = () => {
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [acceptedUsers, setAcceptedUsers] = useState<AcceptedUser[]>([]);
   const [nextId, setNextId] = useState(1);
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const terminalContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!terminalContentRef.current) return;
+    const el = terminalContentRef.current;
+
+    // Wait for the DOM to update and paint twice
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: "smooth",
+        });
+      });
+    });
+  }, [terminalLines]);
 
   useEffect(() => {
     // 1️⃣ Fetch room data
@@ -55,7 +74,9 @@ export const Step4 = () => {
       const msg = JSON.parse(event.data);
 
       if (msg.type === "rehydrate") {
-        console.log("rehydrating:", msg.requests);
+        console.log("rehydrating:", msg.requests, msg.allowed);
+
+        setTerminalLines(msg.logs ?? []); // hydrate logs
         // populate pending requests
         setRequests(
           (msg.requests ?? []).map((user, idx) => ({
@@ -65,6 +86,7 @@ export const Step4 = () => {
             isAdding: false,
             isRemoving: false,
             disabled: false,
+            whitelisted: isUserWhitelisted(user.key) || user.whitelisted,
           })) as UserRequest[]
         );
         console.log(requests);
@@ -77,7 +99,8 @@ export const Step4 = () => {
             key: user.key ?? "",
             isAdding: false,
             isRemoving: false,
-            disabled: false,
+            disabled: !user.canControl,
+            whitelisted: isUserWhitelisted(user.key) || user.whitelisted,
           })) as AcceptedUser[]
         );
       }
@@ -86,37 +109,80 @@ export const Step4 = () => {
         const user = msg.user;
 
         setNextId((prevId) => {
-          const newRequest: UserRequest = {
-            id: prevId,
-            username: user.name,
-            key: user.key,
-            isAdding: true,
-            isRemoving: false,
-            disabled: false,
-          };
-
-          setRequests((prevRequests) => [...prevRequests, newRequest]);
-
-          setTimeout(() => {
-            setRequests((prev) =>
-              prev.map((req) =>
-                req.id === newRequest.id ? { ...req, isAdding: false } : req
-              )
+          setRequests((prevRequests) => {
+            // 🧠 Duplicate guard — if a request with same key already exists, ignore
+            const alreadyExists = prevRequests.some(
+              (req) => req.key === user.key
             );
+            if (alreadyExists) return prevRequests;
 
-            // Toast after state updates
-            toast({
-              title: "Request Added",
-              description: `${user.name} added to queue`,
-              duration: 1000,
-            });
-          }, 50);
+            const newRequest: UserRequest = {
+              id: prevId,
+              username: user.name,
+              key: user.key,
+              isAdding: true,
+              isRemoving: false,
+              disabled: false,
+              whitelisted: user.whitelisted,
+            };
+
+            // Toast after adding
+            setTimeout(() => {
+              toast({
+                title: "Request Added",
+                description: `${user.name} added to queue`,
+                duration: 1000,
+              });
+            }, 50);
+
+            // Animate in
+            setTimeout(() => {
+              setRequests((current) =>
+                current.map((req) =>
+                  req.id === newRequest.id ? { ...req, isAdding: false } : req
+                )
+              );
+            }, 50);
+
+            return [...prevRequests, newRequest];
+          });
 
           return prevId + 1;
         });
       }
+
+      if (msg.type === "logs") {
+        {
+          console.log("added a new log");
+          setTimeout(() => {
+            setTerminalLines((prev) => [...prev, msg.message]);
+          }, 100);
+        }
+      }
     };
   }, []);
+  useEffect(() => {
+    // store all timeouts for this render
+    const timers: number[] = [];
+
+    requests.forEach((req) => {
+      if (req.key && isUserWhitelisted(req.key)) {
+        // schedule auto-accept after 1s
+        req.whitelisted = true;
+        const timerId = window.setTimeout(() => {
+          acceptRequest(req.id);
+          console.log(`${req.username} (id ${req.id}) auto-accepted ✅`);
+        }, 1000);
+
+        timers.push(timerId);
+      }
+    });
+
+    // cleanup function: runs before next effect or on unmount
+    return () => {
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [requests, isUserWhitelisted]);
 
   const [room, setRoom] = useState<Room>({
     name: "",
@@ -199,35 +265,37 @@ export const Step4 = () => {
   const [showDiv, setShowDiv] = useState(true);
   const [showQueues, setShowQueues] = useState(false);
 
-  const addRequest = (user: { name: string; key: string }) => {
-    const newRequest: UserRequest = {
-      id: nextId,
-      username: user.name,
-      key: user.key, // ← store the key here
-      isAdding: true,
-      isRemoving: false,
-      disabled: false,
-    };
+  // const addRequest = (user: { name: string; key: string }) => {
+  //   const newRequest: UserRequest = {
+  //     id: nextId,
+  //     username: user.name,
+  //     key: user.key, // ← store the key here
+  //     isAdding: true,
+  //     isRemoving: false,
+  //     disabled: false,
+  //   };
 
-    setRequests([...requests, newRequest]);
-    setNextId(nextId + 1);
+  //   setRequests([...requests, newRequest]);
+  //   setNextId(nextId + 1);
 
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === newRequest.id ? { ...req, isAdding: false } : req
-        )
-      );
-    }, 50);
-    toast({
-      title: "Request Added",
-      description: `${newRequest.username} added to queue`,
-      duration: 1000,
-    });
-  };
+  //   setTimeout(() => {
+  //     setRequests((prev) =>
+  //       prev.map((req) =>
+  //         req.id === newRequest.id ? { ...req, isAdding: false } : req
+  //       )
+  //     );
+  //   }, 50);
+  //   toast({
+  //     title: "Request Added",
+  //     description: `${newRequest.username} added to queue`,
+  //     duration: 1000,
+  //   });
+  // };
 
   const acceptRequest = async (id: number) => {
+    console.log("Entered accept func");
     const request = requests.find((req) => req.id === id);
+    console.log(request);
     if (!request || !request.key) return; // make sure key exists
 
     try {
@@ -238,7 +306,10 @@ export const Step4 = () => {
           "Content-Type": "application/json",
           "x-user-key": request.key, // send key to identify user
         },
-        body: JSON.stringify({ action: "accept" }),
+        body: JSON.stringify({
+          action: "accept",
+          whitelisted: request.whitelisted,
+        }),
       });
 
       // Local UI updates
@@ -256,6 +327,7 @@ export const Step4 = () => {
           isRemoving: false,
           isAdding: true,
           disabled: false,
+          whitelisted: request.whitelisted,
         };
         setAcceptedUsers((prev) => [...prev, newUser]);
 
@@ -364,6 +436,65 @@ export const Step4 = () => {
     }
   };
 
+  const toggleWhitelist = async (id: number) => {
+    const user = acceptedUsers.find((u) => u.id === id);
+    if (!user || !user.key) return;
+
+    let whitelist = JSON.parse(localStorage.getItem("whitelist") || "[]");
+
+    if (whitelist.includes(user.key)) {
+      // Remove if already whitelisted
+      whitelist = whitelist.filter((key) => key !== user.key);
+      console.log("removed from whitelist");
+    } else {
+      // Add if not present
+      console.log("added to whitelist");
+      whitelist.push(user.key);
+    }
+
+    localStorage.setItem("whitelist", JSON.stringify(whitelist));
+
+    const action = user.whitelisted ? "remove_whitelist" : "whitelist";
+
+    try {
+      await fetch("http://localhost:8000/api/set-scope", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-key": user.key,
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      setAcceptedUsers((prev) =>
+        prev.map((u) =>
+          u.id === id ? { ...u, whitelisted: !u.whitelisted } : u
+        )
+      );
+
+      toast({
+        title: "User Updated",
+        description: `${user.username} is now ${
+          action === "whitelist" ? "whitelisted" : "removed from whitelist"
+        }`,
+        duration: 1000,
+      });
+    } catch (err) {
+      console.error("Failed to toggle whitelist:", err);
+      toast({
+        title: "Error",
+        description: `Failed to ${action} ${user.username}`,
+        variant: "destructive",
+        duration: 2000,
+      });
+    }
+  };
+
+  function isUserWhitelisted(userKey) {
+    const whitelist = JSON.parse(localStorage.getItem("whitelist") || "[]");
+    return whitelist.includes(userKey);
+  }
+
   const toggleDisable = async (id: number) => {
     const user = acceptedUsers.find((u) => u.id === id);
     if (!user || !user.key) return;
@@ -453,11 +584,42 @@ export const Step4 = () => {
                     <div className="bg-secondary rounded-lg p-2 px-4 border border-border">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h3 className="font-normal text-2xl">
-                            {user.username}
-                          </h3>
+                          <div className="flex flex-row space-x-1 align-middle items-center">
+                            <h3 className="font-normal text-2xl">
+                              {user.username}
+                            </h3>
+                            <button
+                              onClick={() => toggleWhitelist(user.id)}
+                              title={`${
+                                user.whitelisted
+                                  ? "User will join automatically next time"
+                                  : "Click to allow user to join automatically"
+                              }`}
+                              className="rounded"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 480 480" // adjust based on original SVG
+                                className="w-6 h-6 hover:scale-125 transition-transform" // Tailwind example
+                              >
+                                <path
+                                  clipRule="evenodd"
+                                  d="M343.939,138.178c-68.255,2.582-68.302,70.007-68.302,70.006   c0,0-1.951-67.404-68.302-70.006c-24.021,0-64.889,26.108-64.889,87.082c0,62.697,133.191,177.589,133.191,177.589   c49.23-49.23,133.015-116.61,133.19-177.589C408.998,164.286,367.959,138.178,343.939,138.178z"
+                                  fill={`${
+                                    !user.whitelisted ? "#FEE1E3" : "#FFB6C1"
+                                  }`}
+                                  fillRule="evenodd"
+                                />
+
+                                <path
+                                  d="M313.203,109.151l-0.324,0.005c-37.104,1.146-57.835,21.478-67.069,40.699   c-0.439,0.889-0.85,1.774-1.25,2.657c-0.424-0.909-0.86-1.819-1.326-2.734c-9.46-19.098-30.041-39.432-66.299-40.622l-0.338-0.005   c-29.475,0.071-73.348,30.516-73.426,95.619c0.714,36.907,35.309,80.67,68.822,118.054c33.697,36.991,67.178,65.862,67.333,65.998   c3.395,2.926,8.44,2.738,11.614-0.428c48.333-49.314,134.18-115.243,135.688-183.599v-0.012c0-0.124,0-0.26,0-0.396   C386.545,139.524,342.602,109.216,313.203,109.151z M369.553,204.744c1.115,51.601-74.564,117.299-124.927,165.972   c-10.901-9.774-35.45-32.417-60.005-59.389c-33.084-35.732-65.083-80.768-64.374-106.557c0.058-56.713,37.599-78.356,56.211-78.54   c29.957,1.459,43.482,16.096,51.574,31.318c3.908,7.635,6.041,15.398,7.14,21.179c1.111,5.781,1.138,9.215,1.196,9.215   c0.13,4.662,3.993,8.354,8.655,8.29c4.663-0.065,8.415-3.869,8.415-8.532c-0.003-0.003-0.005-0.095-0.003-0.253h0.003   c0-0.007-0.002-0.027-0.003-0.04c0.026-2.134,0.658-15.982,7.664-29.943c7.837-15.112,21.224-29.744,52.238-31.233   c18.589,0.179,56.157,21.742,56.216,78.156C369.553,204.5,369.553,204.619,369.553,204.744z"
+                                  fill="#959595"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                           <p className="text-lg text-muted-foreground">
-                            Active
+                            ID: {user.key.slice(0, 10)}...
                           </p>
                         </div>
                         <DropdownMenu>
@@ -471,6 +633,20 @@ export const Step4 = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="crafty font-normal bg-background border-border z-50">
+                            <DropdownMenuItem
+                              title={`${
+                                user.whitelisted
+                                  ? "User will join automatically next time"
+                                  : "Click to allow user to join automatically"
+                              }`}
+                              onClick={() => toggleWhitelist(user.id)}
+                              className={`cursor-pointer text-[18px] ${
+                                user.whitelisted ? "bg-green-500/60" : ""
+                              }`}
+                            >
+                              Whitelist
+                            </DropdownMenuItem>
+
                             <DropdownMenuItem
                               onClick={() => toggleDisable(user.id)}
                               className="cursor-pointer text-[18px]"
@@ -496,7 +672,7 @@ export const Step4 = () => {
         </div>
 
         {/* Room name */}
-        <div className="flex flex-col w-full items-center">
+        <div className="flex -translate-y-[20px] flex-col w-full items-center">
           <div
             className="flex left-1/2 z-10 w-full items-center -translate-y-3/4 flex-col transform text-center flex-1 overflow-hidden"
             style={{
@@ -522,10 +698,10 @@ export const Step4 = () => {
             />
           </div>
           {/* Middle / Stepcard / Center Content - Main Step Card */}
-          <div className="flex-1 text-center max-h-[365px] pt-0 relative overflow-visible">
+          <div className="flex-1 text-center max-h-[365px] pt-0 relative">
             {/* Confetti Animation */}
 
-            <div className="relative  step-card max-w-lg mx-auto max-h-[365px] overflow-hidden">
+            <div className="relative step-card max-w-lg mx-auto max-h-[365px] p-0 overflow-hidden">
               {confettiPieces.map((piece) => (
                 <div
                   key={piece.id}
@@ -547,7 +723,9 @@ export const Step4 = () => {
                       : "opacity-0 max-h-0 mb-0"
                   }`}
                 >
-                  <div className="text-7xl mt-4 mb-6 animate-bounce">🎉</div>
+                  <div className="text-7xl mt-0 z-20 mb-6 animate-bounce">
+                    🎉
+                  </div>
 
                   <h2 className="jersey text-4xl font-bold mb-4 text-success">
                     ALL DONE!
@@ -598,7 +776,7 @@ export const Step4 = () => {
                 <h3 className="jersey text-3xl font-semibold mb-3 flex items-center justify-center">
                   What's Next?
                 </h3>
-                <ul className="text-muted-foreground space-y-2 text-left">
+                <ul className="crafty font-normal text-[20px] text-muted-foreground space-y-2 text-left">
                   <li className="flex items-start">
                     <span className="text-lg mr-2">👥</span>
                     <span>Share the extension file with your friends</span>
@@ -618,14 +796,87 @@ export const Step4 = () => {
               </div>
 
               <p
-                className={`text-sm text-muted-foreground transition-all duration-500 ease-in-out overflow-hidden ${
+                className={`crafty text-[18px] text-muted-foreground transition-all duration-500 ease-in-out overflow-hidden ${
                   !showDiv
                     ? "opacity-100 max-h-[500px] mt-6"
                     : "opacity-0 max-h-0 mt-0"
                 }`}
               >
-                Thanks for using our installer! Have fun listening together! 💚
+                You, your friends, your music, all together :] 💚
               </p>
+            </div>
+
+            {/* Terminal Window */}
+            <div
+              className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                !showDiv
+                  ? "opacity-100 max-h-[400px] mt-8"
+                  : "opacity-0 max-h-0 mt-0"
+              }`}
+            >
+              <div className="max-w-lg mx-auto">
+                <div className="bg-background/95 backdrop-blur-sm rounded-lg border-2 border-foreground/20 shadow-[0_0_15px_rgba(255,255,255,0.1)] animate-pulse-border overflow-hidden">
+                  {/* Logs Header */}
+                  <div className="bg-muted/50 px-4 py-2 flex items-center gap-2 border-b border-border/50">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono ml-2">
+                      logs
+                    </span>
+                  </div>
+
+                  {/* Logs Content */}
+                  <div
+                    ref={terminalContentRef}
+                    className="cascadia logs-container font-extralight p-4 h-48 overflow-y-auto font-mono text-sm bg-background/50 text-left"
+                  >
+                    {terminalLines.length === 0 ? (
+                      <div className="text-muted-foreground/50 italic">
+                        Waiting for messages...
+                      </div>
+                    ) : (
+                      terminalLines.map((line, index) => (
+                        <div
+                          key={index}
+                          className="animate-[fade-in_0.5s_ease-in-out_forwards] mb-1"
+                        >
+                          <span className="text-success/70">$</span> {line}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Placeholder Button */}
+                {/* <div className="mt-4 flex justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const timestamp = new Date().toLocaleTimeString();
+                      const placeholderMessages = [
+                        `[${timestamp}] Connection established`,
+                        `[${timestamp}] User authenticated`,
+                        `[${timestamp}] Processing request...`,
+                        `[${timestamp}] Data received successfully`,
+                        `[${timestamp}] Ready for sync`,
+                      ];
+                      const randomMessage =
+                        placeholderMessages[
+                          Math.floor(Math.random() * placeholderMessages.length)
+                        ];
+                      setTerminalLines((prev) => [...prev, randomMessage]);
+                    }}
+                    className="gap-2"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Log Line
+                  </Button>
+                </div> */}
+              </div>
             </div>
           </div>
         </div>
@@ -641,17 +892,21 @@ export const Step4 = () => {
               Join Requests
             </h3>
             <div className="">
-              {requests.length === 0 ? (
-                <div className="flex items-center justify-center text-center">
-                  <p className="text-muted-foreground text-lg">
-                    No requests in queue
-                  </p>
-                </div>
-              ) : (
-                requests.map((request) => (
-                  <div
-                    key={request.id}
-                    className={`
+              <div className="flex items-center justify-center text-center">
+                <p
+                  className={`text-muted-foreground text-lg ${
+                    requests.length == 0
+                      ? "opacity-100 max-h-[40px]"
+                      : "opacity-0 max-h-0`"
+                  }`}
+                >
+                  No requests in queue
+                </p>
+              </div>
+              {requests.map((request) => (
+                <div
+                  key={request.id}
+                  className={`
     transition-all duration-500 ease-in-out 
     ${
       request.isRemoving
@@ -661,43 +916,42 @@ export const Step4 = () => {
         : "opacity-100 translate-y-0 max-h-[200px] mb-4"
     }
   `}
-                  >
-                    <div className="bg-secondary rounded-lg p-4 border border-border">
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-normal text-2xl">
-                            {request.username}
-                          </h3>
-                        </div>
-                        <p className="text-lg text-muted-foreground">
-                          Pending approval
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="flex-1 h-8 text-lg gap-1 bg-green-600 text-white hover:bg-green-700"
-                            onClick={() => acceptRequest(request.id)}
-                          >
-                            <Check className="h-3 w-3" />
-                            Accept
-                          </Button>
+                >
+                  <div className="bg-secondary rounded-lg p-4 border border-border">
+                    <div className="">
+                      <div className="flex items-center -translate-y-1/4 justify-start">
+                        <h3 className="font-normal text-2xl">
+                          {request.username}
+                        </h3>
+                      </div>
+                      <p className="text-lg text-muted-foreground -translate-y-1/3">
+                        ID: {request.key.slice(0, 10)}...
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1 h-8 text-lg gap-1 bg-green-600 text-white hover:bg-green-700"
+                          onClick={() => acceptRequest(request.id)}
+                        >
+                          <Check className="h-3 w-3" />
+                          Accept
+                        </Button>
 
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="flex-1 h-8 text-lg gap-1"
-                            onClick={() => rejectRequest(request.id)}
-                          >
-                            <X className="h-3 w-3" />
-                            Reject
-                          </Button>
-                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1 h-8 text-lg gap-1"
+                          onClick={() => rejectRequest(request.id)}
+                        >
+                          <X className="h-3 w-3" />
+                          Reject
+                        </Button>
                       </div>
                     </div>
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
           <div className="flex items-center mt-5 flex-col justify-center">

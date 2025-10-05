@@ -31,7 +31,7 @@ export const SpotifyInstaller = () => {
   return (
     <section data-scrollbar>
       <div
-        className={`min-h-screen px-4 ${currentStep != 3 ? "py-12 " : "py-4"}`}
+        className={`min-h-screen px-4 ${currentStep != 3 ? "py-12 " : ""}`}
       >
         <div
           className={`${currentStep === 3 ? "w-full" : "max-w-4xl mx-auto"}`}
@@ -53,7 +53,7 @@ export const SpotifyInstaller = () => {
 
             <p
               className={`text-xl text-muted-foreground transition-all duration-300 ${
-                currentStep == 3 ? "opacity-0 h-0" : "opacity-100"
+                currentStep == 3 ? "opacity-0 h-0" : "opacity-100 max-h-[200px]"
               }`}
             >
               Start listening with your group in just 3 steps!
