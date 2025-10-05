@@ -1,4 +1,5 @@
 import { SpotifyInstaller } from "@/components/SpotifyInstaller";
+import { BackgroundPicker } from "@/components/BackgroundPicker";
 import { useEffect, useState } from "react";
 
 const Index = () => {
@@ -8,6 +9,9 @@ const Index = () => {
     localStorage.getItem("warningClicked") === "true"
   );
   const [showInstaller, setShowInstaller] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [backgroundFillType, setBackgroundFillType] = useState<"cover" | "contain" | "fill" | "none">("cover");
+  const [backgroundBlur, setBackgroundBlur] = useState(0);
 
   useEffect(() => {
     if (localStorage.getItem("warningClicked") === "true") {
@@ -23,9 +27,37 @@ const Index = () => {
     }, 2000);
   };
 
+  const handleBackgroundChange = (imageUrl: string | null, fillType: "cover" | "contain" | "fill" | "none", blur: number) => {
+    if (imageUrl !== null) {
+      setBackgroundImage(imageUrl);
+    } else if (imageUrl === null && blur === 0) {
+      // Only clear background when explicitly removing (blur is reset to 0)
+      setBackgroundImage(null);
+    }
+    setBackgroundFillType(fillType);
+    setBackgroundBlur(blur);
+  };
+
   // Render either warning or main page
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full relative">
+      {/* Background Image Layer */}
+      {backgroundImage && (
+        <div 
+          className="fixed inset-0 transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: backgroundFillType,
+            backgroundPosition: "center",
+            backgroundRepeat: backgroundFillType === "none" ? "repeat" : "no-repeat",
+            filter: `blur(${backgroundBlur}px)`,
+            opacity: backgroundImage ? 1 : 0,
+            zIndex: -1,
+          }}
+        />
+      )}
+      
+      <BackgroundPicker onBackgroundChange={handleBackgroundChange} />
       {showInstaller ? (
         <SpotifyInstaller />
       ) : (
