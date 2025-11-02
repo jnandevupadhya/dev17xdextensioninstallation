@@ -18,7 +18,7 @@ export const Logo = () => {
 
       <div
         className={`transition-all duration-700 ${
-          isVisible ? "opacity-80 m-7 max-h-[1000px]" : "opacity-0 m-0 max-h-0"
+          isVisible ? "opacity-80 mb-7 max-h-[1000px]" : "opacity-0 mb-0 max-h-0"
         }`}
       >
         <svg
