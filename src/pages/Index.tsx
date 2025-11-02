@@ -3,17 +3,27 @@ import {
   BackgroundPicker,
   BackgroundPickerRef,
 } from "@/components/ui/BackgroundPicker";
-import { useEffect, useRef, useState } from "react";
+import { PasswordProtection } from "@/components/PasswordProtection";
+import { useState, useRef, useEffect } from "react";
 
 const Index = () => {
-  //localStorage.setItem("warningClicked", "false");
-
-
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
 
   const [backgroundBlur, setBackgroundBlur] = useState(0);
   const bgRef = useRef<HTMLImageElement | null>(null);
   const bgPickerRef = useRef<BackgroundPickerRef>(null);
+
+  useEffect(() => {
+    const checkUnlock = async () => {
+      const res = await fetch("http://127.0.0.1:8000/api/check-unlock", {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.unlocked) setIsUnlocked(true);
+    };
+    checkUnlock();
+  }, []);
 
   const handleBackgroundChange = (
     imageUrl: string | null,
@@ -25,7 +35,15 @@ const Index = () => {
     setBackgroundBlur(blur);
   };
 
-  // Render either warning or main page
+  // Show password protection first, then main panel
+  // if (!isUnlocked) {
+  //   return (
+  //     <div className="h-full w-full relative">
+  //       <PasswordProtection onUnlock={() => setIsUnlocked(true)} />
+  //     </div>
+  //   );
+  // }
+
   return (
     <div className="h-full w-full relative">
       {/* Background Image Layer */}
