@@ -546,8 +546,8 @@ export const MainPanel = () => {
 
   return (
     <div
-      className="relative flex flex-col w-full max-h-[calc(100vh-20.7%-2rem)] mt-[7.7%] overflow-visible"
-      style={{ height: "calc(100vh-20.7%-2rem)" }}
+      className="relative flex flex-col w-full max-h-[calc(100vh-20vh-2rem)] overflow-visible"
+      style={{ height: "calc(100vh-20vh-2rem)" }}
     >
       <div className=" flex gap-12 w-full mx-auto slide-up-enter -translate-y-1/4">
         {/* Left Queue - Active Users */}

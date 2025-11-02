@@ -14,11 +14,11 @@ export const Logo = () => {
     ["#CD91EDa6", "#FFFFFF"], // Step 3
   ];
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center h-[20vh] justify-center">
 
       <div
-        className={`transition-all duration-700 ${
-          isVisible ? "opacity-80 mb-7 max-h-[1000px]" : "opacity-0 mb-0 max-h-0"
+        className={`transition-opacity duration-700 ${
+          isVisible ? "opacity-80" : "opacity-0"
         }`}
       >
         <svg
