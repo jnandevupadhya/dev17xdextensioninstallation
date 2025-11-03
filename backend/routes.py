@@ -845,6 +845,7 @@ async def get_auth_token():
     # Pull credentials from environment
     client_id = CLIENT_ID
     client_secret = CLIENT_SECRET
+    global pending_auth
 
     # Build auth URL (for browser redirect)
     params = {
@@ -881,6 +882,8 @@ async def get_auth_token():
 
 @router.get("/redirect/")
 async def redirect_to_spotify(client_id: str):
+    global pending_auth
+
     await get_auth_token()
     if client_id not in pending_auth:
         raise HTTPException(status_code=400, detail="unknown_client")
@@ -898,6 +901,7 @@ async def callback(code: str | None = Query(None),     query_state: str | None =
     global tokens
     global callback_completed
     global state  # the global dict
+    global pending_auth
 
     if error:
         callback_completed["denied"] = True
