@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 
-
-
 export const Logo = () => {
   const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
@@ -14,12 +12,9 @@ export const Logo = () => {
     ["#CD91EDa6", "#FFFFFF"], // Step 3
   ];
   return (
-    <div className="flex flex-col items-center h-[20vh] justify-center">
-
+    <div className="flex flex-col items-center">
       <div
-        className={`transition-opacity duration-700 ${
-          isVisible ? "opacity-80" : "opacity-0"
-        }`}
+        className={`transition-all duration-700opacity-80 m-7 max-h-[1000px] `}
       >
         <svg
           width="12vh"
@@ -27,7 +22,6 @@ export const Logo = () => {
           viewBox="0 0 180 180"
           className=" transition-colors duration-700"
           fill="#800080"
-              
           xmlns="http://www.w3.org/2000/svg"
         >
           <path

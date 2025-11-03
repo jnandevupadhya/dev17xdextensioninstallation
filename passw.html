@@ -273,6 +273,7 @@
       const passwordInput = document.getElementById("password");
       const btn = document.getElementById("submitBtn");
       const toast = document.getElementById("toast");
+      passwordInput.focus();
 
       function showToast(message, variant = "normal") {
         toast.textContent = message;
@@ -316,7 +317,7 @@
           }
         } catch (err) {
           console.error(err);
-          showToast("Failed to verify password", "destructive");
+          showToast("Server did not respond", "destructive");
         } finally {
           btn.disabled = false;
           btn.textContent = "Unlock";

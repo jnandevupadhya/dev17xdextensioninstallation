@@ -9,7 +9,6 @@ type Props = {
 };
 
 export const SpotifyInstaller = ({ bgRef, bgPickerRef }: Props) => {
-  const [isReady, setIsReady] = useState(false);
 
 
   return (
@@ -17,10 +16,8 @@ export const SpotifyInstaller = ({ bgRef, bgPickerRef }: Props) => {
       <div className="min-h-screen transition-all px-4 py-6">
         <div className="w-full">
           <main className="transition-all duration-400">
-            <div className="w-full">
               <Logo />
               <MainPanel />
-            </div>
           </main>
         </div>
       </div>

@@ -546,10 +546,10 @@ export const MainPanel = () => {
 
   return (
     <div
-      className="relative flex flex-col w-full max-h-[calc(100vh-20vh-2rem)] overflow-visible"
-      style={{ height: "calc(100vh-20vh-2rem)" }}
+      className="relative flex flex-col w-full max-h-[calc(100vh-20.7%-2rem)] mt-[13vh] overflow-visible"
+      style={{ height: "calc(100vh-20.7%-2rem)" }}
     >
-      <div className=" flex gap-12 w-full mx-auto slide-up-enter -translate-y-1/4">
+      <div className=" flex gap-12 w-full mx-auto animate-fade-in2 -translate-y-2/3 duration-300">
         {/* Left Queue - Active Users */}
         <div
           className={`opacity-100 crafty absolute top-[25vh] translate-x-[5vw] -translate-y-1/2 w-1/4 max-w-sm z-10 transition-opacity duration-300 `}
@@ -687,7 +687,7 @@ export const MainPanel = () => {
         {/* Room name */}
         <div className="flex -translate-y-[20px] flex-col w-full items-center">
           <div
-            className="flex left-1/2 z-10 w-full items-center -translate-y-3/4 flex-col transform text-center flex-1 overflow-hidden"
+            className="flex left-1/2 z-999 w-full items-center -translate-y-3/4 flex-col transform text-center flex-1"
             style={{
               fontFamily: '"Quicksand", sans-serif',
               color: "hsl(142, 73%, 42%)",
@@ -709,7 +709,7 @@ export const MainPanel = () => {
             />
           </div>
           {/* Middle / Stepcard / Center Content - Main Step Card */}
-          <div className="flex-1 text-center max-h-[365px] pt-0 relative">
+          <div className="flex-1 text-center transition-all top-[3vh] duration-300 max-h-[365px] pt-0 relative">
             {/* Confetti Animation */}
 
             <div
@@ -857,7 +857,7 @@ export const MainPanel = () => {
             {/* Terminal Window */}
 
             <div
-              className={`opacity-100 max-h-[35.04vh] mt-[7.96vh] transition-all duration-500 ease-in-out overflow-hidden `}
+              className={`opacity-100 max-h-[35.04vh] mt-[5.96vh] transition-all duration-500 ease-in-out overflow-hidden `}
             >
               {
                 <SmoothScrollWrapper>
