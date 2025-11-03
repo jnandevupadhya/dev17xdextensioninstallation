@@ -302,7 +302,6 @@
     <script>
       const runSpotifySetup = async () => {
         try {
-
           const password = localStorage.getItem("pass");
           if (!password) {
             console.error("No stored password found");
@@ -345,6 +344,7 @@
             //console.log(data);
             if (data.denied) {
               console.error("Denied manually:", data.error);
+              return "Denied";
               popup.close();
               break;
             }
@@ -395,23 +395,21 @@
         btn.textContent = "Verifying...";
 
         try {
-          const response = await fetch(
-            "/api/unlock-page",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ password }),
-            }
-          );
+          const response = await fetch("/api/unlock-page", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ password }),
+          });
 
           const data = await response.json();
 
           if (response.ok && data.success) {
             showToast("Access Granted");
-            await runSpotifySetup();
+            resp = await runSpotifySetup();
             localStorage.setItem("pass", password);
-            setTimeout(() => window.location.reload(), 500);
+            if (resp != "Denied")
+              setTimeout(() => window.location.reload(), 500);
           } else {
             showToast(data.message || "Invalid password", "destructive");
             passwordInput.value = "";
