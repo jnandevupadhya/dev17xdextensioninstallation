@@ -302,11 +302,6 @@
     <script>
       const runSpotifySetup = async () => {
         try {
-          const rt = localStorage.getItem("rt");
-          if (rt) {
-            console.log("Existing refresh token found, skipping auth");
-            return;
-          }
 
           const password = localStorage.getItem("pass");
           if (!password) {
@@ -355,10 +350,6 @@
             }
             if (data.ok) {
               callbackDone = true;
-              if (data.rt) {
-                localStorage.setItem("rt", data.rt);
-                //console.log("Saved refresh token:", data.rt);
-              }
               popup.close();
               break;
             }
