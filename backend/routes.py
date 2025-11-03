@@ -67,9 +67,24 @@ router = APIRouter()
 
 ENV_PATH = os.path.join(os.path.dirname(__file__), "..", ".env")
 
+
+def get_base_url():
+    """
+    Returns the base URL depending on environment:
+    - On Render: derive from RENDER_SERVICE_NAME
+    - Locally: use localhost:8000
+    """
+    if os.getenv("RENDER") == "true":
+        # Construct URL dynamically from service name
+        service_name = os.getenv("RENDER_SERVICE_NAME", "unknown-service")
+        return f"https://{service_name}.onrender.com"
+    else:
+        # Default for local dev
+        return "http://localhost:8000"
+    
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
-REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
+REDIRECT_URI = get_base_url() + "/api/callback"
 SCOPES = "user-read-playback-state user-modify-playback-state user-read-currently-playing user-read-private"
 state["env_valid"] = False
 terminal_logs: list[str] = []
@@ -427,19 +442,7 @@ async def websocket_endpoint(ws: WebSocket):
         connected_frontends.remove(ws)
 
     
-def get_base_url():
-    """
-    Returns the base URL depending on environment:
-    - On Render: derive from RENDER_SERVICE_NAME
-    - Locally: use localhost:8000
-    """
-    if os.getenv("RENDER") == "true":
-        # Construct URL dynamically from service name
-        service_name = os.getenv("RENDER_SERVICE_NAME", "unknown-service")
-        return f"https://{service_name}.onrender.com"
-    else:
-        # Default for local dev
-        return "http://localhost:8000"
+
     
 
 async def get_room():
