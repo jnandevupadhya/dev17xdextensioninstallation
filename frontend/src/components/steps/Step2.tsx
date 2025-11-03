@@ -52,7 +52,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
     const checkTokens = async () => {
       setSubmissionError(null); // reset any previous submission errors
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/token-check/");
+        const res = await fetch("/api/token-check/");
         if (!res.ok) {
           throw new Error("Network response was not ok");
         }
@@ -116,7 +116,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
       setIsProcessing(true);
       // Send PUT request with clientId and clientSecret as query params
       const response = await fetch(
-        "http://127.0.0.1:8000/api/get-auth-token/",
+        "/api/get-auth-token/",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -154,7 +154,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
   ) => {
     const password = localStorage.getItem("pass"); // or however you store it
 
-    const res = await fetch("http://127.0.0.1:8000/api/get-creds", {
+    const res = await fetch("/api/get-creds", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
@@ -178,7 +178,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
     const trimmedId = id.trim() ?? clientId.trim();
 
     popup.location.href =
-      "http://127.0.0.1:8000/api/redirect/?client_id=" + trimmedId;
+      "/api/redirect/?client_id=" + trimmedId;
 
     try {
       setTimeout(() => {
@@ -196,7 +196,7 @@ export const Step2 = ({ onNext }: Step2Props) => {
 
       try {
         while (!callbackDone && popup && !popup.closed) {
-          const res = await fetch("http://127.0.0.1:8000/api/callback");
+          const res = await fetch("/api/callback");
           const data = await res.json();
 
           if (data.denied) {

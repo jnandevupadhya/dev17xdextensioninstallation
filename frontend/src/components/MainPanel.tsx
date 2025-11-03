@@ -72,7 +72,7 @@ export const MainPanel = () => {
   useEffect(() => {
     // 1️⃣ Fetch room data
     const fetchRoom = async () => {
-      const room = await fetch("http://localhost:8000/api/room/");
+      const room = await fetch("/api/room/");
       const data = await room.json();
       setRoom((prev) => ({ ...prev, id: data.data.room_id }));
       console.log(data);
@@ -80,7 +80,11 @@ export const MainPanel = () => {
     fetchRoom();
 
     // 2️⃣ Connect WebSocket for join requests
-    const ws = new WebSocket("ws://127.0.0.1:8000/api/ws"); //websocket
+    const wsUrl = window.location.origin
+      .replace(/^http/, "ws") // http→ws / https→wss
+      .replace(/:\d+/, ":8000"); // replace any port with 8000
+
+    const ws = new WebSocket(`${wsUrl}/api/ws`);
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
@@ -309,7 +313,7 @@ export const MainPanel = () => {
 
     try {
       // Call backend to allow this user
-      await fetch("http://localhost:8000/api/set-scope", {
+      await fetch("/api/set-scope", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -371,7 +375,7 @@ export const MainPanel = () => {
 
     try {
       // Call backend to reject this user
-      await fetch("http://localhost:8000/api/set-scope", {
+      await fetch("/api/set-scope", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -412,7 +416,7 @@ export const MainPanel = () => {
 
     try {
       // Call backend to remove this user
-      await fetch("http://localhost:8000/api/set-scope", {
+      await fetch("/api/set-scope", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -466,7 +470,7 @@ export const MainPanel = () => {
     const action = user.whitelisted ? "remove_whitelist" : "whitelist";
 
     try {
-      await fetch("http://localhost:8000/api/set-scope", {
+      await fetch("/api/set-scope", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -512,7 +516,7 @@ export const MainPanel = () => {
 
     try {
       // Tell backend to update scope
-      await fetch("http://localhost:8000/api/set-scope", {
+      await fetch("/api/set-scope", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
