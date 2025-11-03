@@ -895,7 +895,7 @@ def check():
 
 
 @router.get("/callback")
-async def callback(code: str | None = Query(None),     query_state: str | None = Query(None, alias="state"), error: str | None = Query(None)):
+async def callback(code: str | None = Query(None), query_state: str | None = Query(None, alias="state"), error: str | None = Query(None)):
     # Save the query param under another name
 
     global tokens
@@ -912,6 +912,7 @@ async def callback(code: str | None = Query(None),     query_state: str | None =
         return callback_completed
 
     client_id = query_state
+    print("Callback received for client_id:", client_id, "pending_auth keys:", list(pending_auth.keys()))
 
     if client_id not in pending_auth:
         return {"error": "no_pending_auth"}
