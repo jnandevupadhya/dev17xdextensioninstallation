@@ -622,7 +622,7 @@ async def current_track(
                 })
             await broadcast_log(f"🟢 Auto-accepted whitelisted user: {user.name} ({user.key[:6]}...)")
             return {"status": "accepted", "user": {"name": user.name, "key": user.key}}
-        return {"status": "pending", "isAllowed": False, "canControl": False}
+        return {"status": "pending", "isAllowed": False, "canControl": user.canControl}
 
     # 6️⃣ New user → add to request_list
     new_user = User(name=name, key=key)
@@ -649,7 +649,7 @@ async def current_track(
     for ws in connected_frontends:
         await ws.send_json({
             "type": "new_request",
-            "user": {"name": new_user.name, "key": new_user.key, "canControl": new_user in previous_disables}
+            "user": {"name": new_user.name, "key": new_user.key, "canControl": new_user.key not in previous_disables}
         })
 
     return {"status": "pending", "isAllowed": False, "canControl": False}

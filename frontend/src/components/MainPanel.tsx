@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import reqNotif from "@/sounds/newReq.mp3";
 import accNotif from "@/sounds/accepted.mp3";
 import leaveNotif from "@/sounds/left.mp3";
-const logging = false;
+const logging = true;
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,10 +61,12 @@ export const MainPanel = () => {
     // Wait for the DOM to update and paint twice
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        el.scrollTo({
-          top: el.scrollHeight,
-          behavior: "smooth",
-        });
+        setTimeout(() => {
+          el.scrollTo({
+            top: el.scrollHeight,
+            behavior: "smooth",
+          });
+        }, 100);
       });
     });
   }, [terminalLines]);
@@ -123,6 +125,7 @@ export const MainPanel = () => {
 
       if (msg.type === "new_request") {
         const user = msg.user;
+        console.log("new request from", user);
 
         setNextId((prevId) => {
           setRequests((prevRequests) => {
@@ -365,7 +368,7 @@ export const MainPanel = () => {
           key: request.key, // keep key for future actions
           isRemoving: false,
           isAdding: true,
-          disabled: request.disabled,
+          disabled: false,
           whitelisted: request.whitelisted,
         };
         setAcceptedUsers((prev) => [...prev, newUser]);
@@ -373,9 +376,18 @@ export const MainPanel = () => {
         setTimeout(() => {
           setAcceptedUsers((prev) =>
             prev.map((user) =>
-              user.id === id ? { ...user, isAdding: false } : user
+              user.id === id
+                ? { ...user, isAdding: false, disabled: false }
+                : user
             )
           );
+          setTimeout(() => {
+            setAcceptedUsers((prev) =>
+              prev.map((user) =>
+                user.id === newUser.id ? { ...user, disabled: request.disabled } : user
+              )
+            );
+          }, 500);
         }, 50);
 
         toast({
