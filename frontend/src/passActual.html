@@ -25,6 +25,9 @@
         min-height: 100vh;
         position: relative;
         overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none;
       }
       body::before {
         content: "";
@@ -244,9 +247,9 @@
 
       <h2>Control Panel Access</h2>
       <p>
-        Since this is a live demo, you may click on continue to access the host
-        page. In your hosted page, you will be asked for a password that you
-        must set before deploying.
+        Since this is a live demo, you can click Continue to access the host
+        page. On your hosted page, you’ll be prompted to enter a password that
+        you must set before deploying.
       </p>
 
       <form id="passwordForm">
