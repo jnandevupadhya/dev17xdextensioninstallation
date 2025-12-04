@@ -1,7 +1,5 @@
-import json
 import os
 import asyncio
-import random
 import re
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +7,6 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
-import httpx
 
 from .routes import router, cleanup_stale_rooms
 from .spotify_cache import refresh_spotify_cache

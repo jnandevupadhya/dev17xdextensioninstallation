@@ -242,154 +242,29 @@
         />
       </svg>
       <h2>Control Panel Access</h2>
-      <p>Enter password to continue</p>
+      <p>Since this is a live demo, you may click on continue to access the host page. In your hosted page, you will be asked for a password that you must set before deploying.</p>
 
       <form id="passwordForm">
         <div class="input-wrapper">
-          <input
-            type="password"
-            id="password"
-            placeholder="Enter password"
-            autocomplete="off"
-            required
-          />
           <button type="button" class="eye-toggle" id="togglePassword">
-            <svg
-              id="eyeIcon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <svg
-              id="eyeOffIcon"
-              style="display: none"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-              <path
-                d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
-              />
-              <path
-                d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
-              />
-              <line x1="2" x2="22" y1="2" y2="22" />
-            </svg>
           </button>
+        </form>
         </div>
-        <button type="submit" id="submitBtn">Unlock</button>
-      </form>
+        <button type="submit" id="submitBtn">Continue</button>
     </div>
 
     <div id="toast" class="toast"></div>
 
     <script>
-      const runSpotifySetup = async () => {
-        try {
-          const password = localStorage.getItem("pass");
-          if (!password) {
-            console.error("No stored password found");
-            return;
-          }
-
-          // 1️⃣ Get creds
-          const res = await fetch("/api/get-creds", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password }),
-          });
-          if (!res.ok) throw new Error("Unauthorized password");
-
-          const creds = await res.json();
-          const clientId = creds.client_id.trim();
-
-          // 2️⃣ Open popup (this now works because it’s triggered by the button click)
-          const width = 480;
-          const height = 950;
-          const left = window.screenX + (window.outerWidth - width) / 2;
-          const top = window.screenY + (window.outerHeight - height) / 2 + 55;
-
-          const popup = window.open(
-            `/api/redirect/?client_id=${clientId}`,
-            "spotifyAuth",
-            `width=${width},height=${height},left=${left},top=${top}`
-          );
-
-          if (!popup) {
-            console.error("Popup blocked by browser");
-            return;
-          }
-          console.log("Opened Spotify auth popup");
-          // 3️⃣ Poll for callback
-          let callbackDone = false;
-          while (!callbackDone && !popup.closed) {
-            const poll = await fetch("/api/callback");
-            const data = await poll.json();
-            //console.log(data);
-            if (data.denied) {
-              console.error("Denied manually:", data.error);
-              popup.close();
-              return "Denied";
-              break;
-            }
-            if (data.ok) {
-              callbackDone = true;
-              popup.close();
-              break;
-            }
-            await new Promise((r) => setTimeout(r, 2000));
-          }
-        } catch (err) {
-          console.error("Spotify setup failed:", err);
-        }
-      };
 
       const form = document.getElementById("passwordForm");
-      const passwordInput = document.getElementById("password");
       const btn = document.getElementById("submitBtn");
-      const toast = document.getElementById("toast");
-      const toggleBtn = document.getElementById("togglePassword");
-      const eyeIcon = document.getElementById("eyeIcon");
-      const eyeOffIcon = document.getElementById("eyeOffIcon");
-      passwordInput.focus();
 
-      toggleBtn.addEventListener("click", () => {
-        const isPassword = passwordInput.type === "password";
-        passwordInput.type = isPassword ? "text" : "password";
-        eyeIcon.style.display = isPassword ? "none" : "block";
-        eyeOffIcon.style.display = isPassword ? "block" : "none";
-      });
-
-      function showToast(message, variant = "normal") {
-        toast.textContent = message;
-        toast.style.background = variant === "destructive" ? "#d32f2f" : "#333";
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 2000);
-      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const password = passwordInput.value.trim();
-        if (!password) {
-          showToast("Please enter a password", "destructive");
-          return;
-        }
+        const password = "test";
+
 
         btn.disabled = true;
         btn.textContent = "Verifying...";
@@ -405,21 +280,14 @@
           const data = await response.json();
 
           if (response.ok && data.success) {
-            showToast("Access Granted");
-            resp = await runSpotifySetup();
-            localStorage.setItem("pass", password);
-            if (resp != "Denied")
-              setTimeout(() => window.location.reload(), 500);
-          } else {
-            showToast(data.message || "Invalid password", "destructive");
-            passwordInput.value = "";
+            setTimeout(() => window.location.reload(), 500);
           }
         } catch (err) {
           console.error(err);
           showToast("Server did not respond", "destructive");
         } finally {
           btn.disabled = false;
-          btn.textContent = "Unlock";
+          btn.textContent = "Continue";
         }
       });
     </script>

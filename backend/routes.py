@@ -13,8 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
@@ -721,87 +720,12 @@ async def get_cover(track_id: str):
 
 @router.post("/toggle-play-pause/")
 async def toggle_play_pause(x_user_name: str = Header(...), x_user_key: str = Header(...)):
-    """
-    Toggle between play and pause for the current playback.
-    Blocks users who are not in allow_list or don't have control access.
-    """
-        # 1️⃣ Validate user
-    user = next((u for u in allow_list if u.key == x_user_key and u.name == x_user_name), None)
-    if not user:
-        print(f"[BLOCKED] Non-allowed user tried to toggle: {x_user_name}")
-        return  # just block silently
-
-    if not user.canControl:
-        await broadcast_log(f"[BLOCKED] 🔴 {user.name} tried to toggle")
-        print(f"[BLOCKED] User {x_user_name} is not allowed to control")
-        return  # silently ignore as per your rule
-    
-    
-    headers = get_headers()
-    url_status = "https://api.spotify.com/v1/me/player"
-    async with httpx.AsyncClient() as client:
-        # Get current playback state
-        r = await client.get(url_status, headers=headers)
-        if r.status_code == 401 and "refresh_token" in tokens:
-            access_token = refresh_access_token(tokens["refresh_token"])
-            headers = {"Authorization": f"Bearer {access_token}"}
-            r = await client.get(url_status, headers=headers)
-
-        if r.status_code != 200:
-            return {"success": False, "error": "Cannot get playback status"}
-
-        playback = r.json()
-        is_playing = playback.get("is_playing", False)
-
-        # Toggle
-        if is_playing:
-            toggle_url = "https://api.spotify.com/v1/me/player/pause"
-            await broadcast_log(f"⚪ {user.name} paused the playback")
-
-        else:
-            await broadcast_log(f"⚪ {user.name} resumed the playback")
-            toggle_url = "https://api.spotify.com/v1/me/player/play"
-
-        toggle_resp = await client.put(toggle_url, headers=headers)
-        if toggle_resp.status_code in [204, 202]:
-            return {"success": True, "playing": not is_playing}
-        return {"success": False, "error": "Failed to toggle play/pause"}
+    return {"success": False, "error": "This is only for demo, you cannot toggle playback in this room!"}
 
 
 @router.post("/next-track/")
 async def skip_next_track(x_user_name: str = Header(...), x_user_key: str = Header(...)):
-    """
-    Skip to the next track in the current playback.
-    Blocks users who are not in allow_list or don't have control access.
-    """
-
-    # 1️⃣ Validate user
-    user = next((u for u in allow_list if u.key == x_user_key and u.name == x_user_name), None)
-    if not user:
-        print(f"[BLOCKED] Non-allowed user tried to skip next: {x_user_name}")
-        return
-
-    if not user.canControl:
-        await broadcast_log(f"[BLOCKED] 🔴 {user.name} tried to skip the track ({user.key[:6]}...)")
-        print(f"[BLOCKED] User {x_user_name} is not allowed to control (next)")
-        return
-
-    # 2️⃣ Proceed with actual Spotify request
-    headers = get_headers()
-    url = "https://api.spotify.com/v1/me/player/next"
-
-    async with httpx.AsyncClient() as client:
-        r = await client.post(url, headers=headers)
-        if r.status_code == 401 and "refresh_token" in tokens:
-            access_token = refresh_access_token(tokens["refresh_token"])
-            headers = {"Authorization": f"Bearer {access_token}"}
-            r = await client.post(url, headers=headers)
-        print(r)
-        if r.status_code in [200, 204, 202]:
-            await broadcast_log(f"⚪ {user.name} skipped to the next track")
-            return {"success": True}
-
-        return {"success": False, "error": "Failed to skip track"}
+    return {"success": False, "error": "This is only for demo, you cannot skip the track in this room!"}
 
 
 
@@ -813,43 +737,7 @@ async def seek_track(
     x_user_name: str = Header(...),
     x_user_key: str = Header(...)
 ):
-    """
-    Seek to a specific position in the current playback.
-    Blocks users who are not in allow_list or don't have control access.
-    """
-    # 1️⃣ Validate user
-    user = next((u for u in allow_list if u.key == x_user_key and u.name == x_user_name), None)
-    if not user:
-        print(f"[BLOCKED] Non-allowed user tried to seek: {x_user_name}")
-        return
-
-    if not user.canControl:
-        print(f"[BLOCKED] User {x_user_name} is not allowed to control (seek)")
-        await broadcast_log(f"[BLOCKED] 🔴 {user.name} tried to toggle ({user.key[:6]}...)")
-
-        return
-
-    # 2️⃣ Proceed with Spotify seek request
-    headers = get_headers()
-    url = f"https://api.spotify.com/v1/me/player/seek?position_ms={position_ms}"
-
-    async with httpx.AsyncClient() as client:
-        r = await client.put(url, headers=headers)
-
-        # Refresh token if expired
-        if r.status_code == 401 and "refresh_token" in tokens:
-            access_token = refresh_access_token(tokens["refresh_token"])
-            headers = {"Authorization": f"Bearer {access_token}"}
-            r = await client.put(url, headers=headers)
-
-        if r.status_code in [200,204, 202]:
-            await broadcast_log(f"⚪ {user.name} seeked to {ms_to_min_sec(position_ms)}s")
-            return {"success": True, "position_ms": position_ms}
-
-        return {"success": False, "error": f"Failed to seek: {r.text}"}
-
-
-
+    return {"success": False, "error": "This is only for demo, you cannot seek track in this room!"}
 
 
 @router.put("/get-auth-token/")
